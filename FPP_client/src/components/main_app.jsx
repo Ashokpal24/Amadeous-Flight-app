@@ -41,6 +41,7 @@ const MainApp = ({ handleLogout }) => {
     adults: 1,
     currencyCode: "INR",
     max: 20,
+    // nonStop: true
   };
 
   const currentTimeInSeconds = () => { return Math.floor(Date.now() / 1000); };
@@ -136,7 +137,10 @@ const MainApp = ({ handleLogout }) => {
       }).then((response) => {
         const newData = response.data.data;
         setData(newData);
-        // console.log(newData);
+        // newData.forEach((items) => {
+        //   // console.log(items)
+        //   console.log(items['itineraries'][0]['segments'].length)
+        // })
       }).
       catch((error) =>
         console.error("Error making API request:", error)
@@ -148,7 +152,7 @@ const MainApp = ({ handleLogout }) => {
   };
 
   const handlDateTime = (item, key) => {
-    const dateObj = new Date(item.itineraries[0]["segments"][0][key]["at"]);
+    const dateObj = new Date(item[key]["at"]);
     const formattedDate = dateObj.toLocaleString("en-US", {
       timeZone: "Asia/Kolkata",
     });
@@ -167,32 +171,32 @@ const MainApp = ({ handleLogout }) => {
   }, [departDate, airCodeDep, airCodeArvl]);
 
   return (
-    <Box width={ 1 }>
+    <Box width={1}>
       <AppBar position="sticky" >
         <Toolbar>
-          <Typography variant="h6" component="div" sx={ { flexGrow: 1 } }>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ✈️ Flight price prediction
           </Typography>
-          <Button color="inherit" onClick={ () => { handleLogout(); } }>Login out</Button>
+          <Button color="inherit" onClick={() => { handleLogout(); }}>Login out</Button>
         </Toolbar>
       </AppBar>
-      <Box sx={ { marginTop: "2rem", marginBottom: "2rem", display: "flex", flexDirection: "row", justifyContent: "space-evenly", alignItems: "center", width: 1 } }>
+      <Box sx={{ marginTop: "2rem", marginBottom: "2rem", display: "flex", flexDirection: "row", justifyContent: "space-evenly", alignItems: "center", width: 1 }}>
         <div className="search-container">
           <TextField id="search-bar-1"
             variant="outlined" label="From"
             type="text"
-            value={ tempDep }
-            onChange={ (e) => { setTempDep(e.target.value); } }
-            onFocus={ () => handleSuggestionON(
+            value={tempDep}
+            onChange={(e) => { setTempDep(e.target.value); }}
+            onFocus={() => handleSuggestionON(
               setAirCodeDep,
               setTempDep,
               'search-bar-1',
               'suggestions-1'
-            ) }
-            onBlur={ () => handleSuggestionOFF(
+            )}
+            onBlur={() => handleSuggestionOFF(
               setAirCodeDep,
               'suggestions-1'
-            ) }
+            )}
           />
           <ul id="suggestions-1"></ul>
         </div>
@@ -203,27 +207,27 @@ const MainApp = ({ handleLogout }) => {
             variant="outlined"
             label="To"
             type="text"
-            value={ tempArvl }
-            onChange={ (e) => { setTempArvl(e.target.value); } }
-            onFocus={ () => handleSuggestionON(
+            value={tempArvl}
+            onChange={(e) => { setTempArvl(e.target.value); }}
+            onFocus={() => handleSuggestionON(
               setAirCodeArvl,
               setTempArvl,
               'search-bar-2',
               'suggestions-2'
-            ) }
-            onBlur={ () => handleSuggestionOFF(
+            )}
+            onBlur={() => handleSuggestionOFF(
               setAirCodeArvl,
               'suggestions-2'
-            ) }
+            )}
           />
           <ul id="suggestions-2"></ul>
         </div>
 
-        <LocalizationProvider dateAdapter={ AdapterDayjs }>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Departure"
-            value={ departDate }
-            onChange={ (newValue) => setDepartDate(newValue) }
+            value={departDate}
+            onChange={(newValue) => setDepartDate(newValue)}
           />
         </LocalizationProvider>
 
@@ -232,30 +236,68 @@ const MainApp = ({ handleLogout }) => {
       {
         data != null ? (
           <List >
-            { data.map((item, index) =>
-              <ListItem key={ item.id } >
-                <Grid container spacing={ 2 }>
-                  <Grid item sx={ { display: "flex", justifyContent: "center", alignItems: "center", width: 1 } }>
-                    <Card sx={ { width: '85%' } }>
-                      <CardContent sx={ { display: "flex", flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" } }>
-                        <Typography sx={ { marginRight: "2rem" } }>{ item.id }</Typography>
+            {data.map((item, index) =>
+              <ListItem key={item.id} >
+                <Grid container spacing={2}>
+                  <Grid item sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: 1 }}>
+                    <Card sx={{ width: '85%' }}>
+                      {/* <Typography sx={{ marginRight: "2rem" }}>{item.id}</Typography> */}
+
+
+                      <CardContent sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-evenly",
+                        alignItems: "flex-start",
+                        justifyItems: "center"
+                      }}>
                         <CardMedia
                           component="img"
-                          sx={ { width: "70px", height: "70px", objectFit: "contain", marginRight: "2rem" } }
-                          image={ `https://pics.avs.io/640/320/${fetchlogo(item)}.png` }
+                          sx={{ width: "70px", height: "70px", objectFit: "contain", marginLeft: "1rem" }}
+                          image={`https://pics.avs.io/640/320/${fetchlogo(item)}.png`}
                         ></CardMedia>
-                        <Typography sx={ { display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "10%", marginRight: "2rem" } }> { item.itineraries[0]["segments"][0]["departure"]["iataCode"] }<ArrowForwardIcon /> { item.itineraries[0]["segments"][0]["arrival"]["iataCode"] }</Typography>
-                        <Typography sx={ { width: "30%", marginRight: "1rem" } }>Departure: { handlDateTime(item, "departure") }</Typography>
-                        <Typography sx={ { width: "30%", marginRight: "1rem" } }>Arrival: { handlDateTime(item, "arrival") }</Typography>
-                        {/* <Typography>Carrier code: {item.itineraries[0]["segments"][0]["operating"]["carrierCode"]}</Typography> */ }
-                        <Typography sx={ { display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "5%", marginRight: "2rem" } }><CurrencyRupeeIcon />{ item["price"]["total"] }</Typography>
+
+                        {
+                          item.itineraries[0]['segments'].map((itemSeg, index) => (
+                            <CardContent sx={{
+                              display: "flex",
+                              flexDirection: "row",
+                              justifyContent: "space-evenly",
+                              alignItems: "flex-start"
+                            }}>
+
+                              <Typography sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                                width: "10%",
+                                marginRight: "2rem"
+                              }}>
+                                {itemSeg["departure"]["iataCode"]}<ArrowForwardIcon /> {itemSeg["arrival"]["iataCode"]}
+                              </Typography>
+                              <Typography sx={{ width: "30%", marginRight: "1rem", maxWidth: '250px', minWidth: '250px' }}>Arrival: {handlDateTime(itemSeg, "arrival")}</Typography>
+                              <Typography sx={{ width: "30%", marginRight: "1rem", maxWidth: '250px', minWidth: '250px' }}>Departure: {handlDateTime(itemSeg, "departure")}</Typography>
+                              <Typography sx={{ maxWidth: '200px', minWidth: '150px' }}>Carrier code: {itemSeg["operating"]["carrierCode"]}</Typography>
+                              <Typography sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                width: "5%",
+                                marginRight: "2rem"
+                              }}><CurrencyRupeeIcon />{
+                                  item["price"]["total"]}
+                              </Typography>
+                            </CardContent>
+                          ))
+                        }
 
                       </CardContent>
-
                     </Card>
                   </Grid>
                 </Grid>
-              </ListItem>) }
+              </ListItem>)}
           </List>
         ) : (<>Hello world</>)
       }

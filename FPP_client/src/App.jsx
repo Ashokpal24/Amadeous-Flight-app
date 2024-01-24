@@ -23,7 +23,7 @@ function App() {
             return;
         }
         try {
-            const response = await fetch('https://laughing-space-system-674p77v46p52r667-5000.app.github.dev/register', {
+            const response = await fetch('https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ function App() {
 
         }
         try {
-            const response = await fetch('https://laughing-space-system-674p77v46p52r667-5000.app.github.dev/login', {
+            const response = await fetch('https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,25 +83,25 @@ function App() {
         setPassword("");
     };
     return (
-        <div className="App" style={ { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" } } >
-            { auth == false ? (
-                <div style={ { width: "350px" } }>
+        <div className="App" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }} >
+            {auth == false ? (
+                <div style={{ width: "350px" }}>
                     <h1>Login and Register</h1>
-                    <div style={ { display: "flex", flexDirection: "column", marginBottom: "2rem" } }>
-                        <TextField className='text-field' sx={ { marginBottom: "2rem" } } variant="outlined" label="User Name" type="text" value={ username } onChange={ (e) => setUsername(e.target.value) } />
-                        <TextField className='text-field' sx={ { marginBottom: "2rem" } } variant="outlined" label="Password" type="password" value={ password } onChange={ (e) => setPassword(e.target.value) } />
-                        <div style={ { display: "flex", flexDirection: "row", justifyContent: "space-around" } }>
-                            <Button sx={ { width: "40%" } } variant="contained" onClick={ handleRegister }>Register</Button>
-                            <Button sx={ { width: "40%" } } variant="contained" onClick={ handleLogin }>Login</Button>
+                    <div style={{ display: "flex", flexDirection: "column", marginBottom: "2rem" }}>
+                        <TextField className='text-field' sx={{ marginBottom: "2rem" }} variant="outlined" label="User Name" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                        <TextField className='text-field' sx={{ marginBottom: "2rem" }} variant="outlined" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+                            <Button sx={{ width: "40%" }} variant="contained" onClick={handleRegister}>Register</Button>
+                            <Button sx={{ width: "40%" }} variant="contained" onClick={handleLogin}>Login</Button>
                         </div>
                     </div>
 
-                    { message != "" ? (
+                    {message != "" ? (
                         <div>
-                            <Alert severity={ status }>{ message }</Alert>
+                            <Alert severity={status}>{message}</Alert>
                         </div>
-                    ) : <></> }
-                </div>) : (<MainApp handleLogout={ handleLogout } />)
+                    ) : <></>}
+                </div>) : (<MainApp handleLogout={handleLogout} />)
             }
         </div >
     );

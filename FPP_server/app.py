@@ -10,7 +10,7 @@ CORS(
     app,
     resources={
         r"/*": {
-            "origins": "https://laughing-space-system-674p77v46p52r667-5173.app.github.dev"
+            "origins": "https://sturdy-spoon-qgpxggv47rv24pvp-5173.app.github.dev"
         }
     },
     supports_credentials=True,
