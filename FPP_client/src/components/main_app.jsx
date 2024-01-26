@@ -17,7 +17,8 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Paper
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -388,42 +389,72 @@ const MainApp = ({ handleLogout }) => {
 
                         <CardContent sx={{
                           display: "flex",
-                          flexDirection: "column",
+                          flexDirection: "row",
                           justifyContent: "space-evenly",
                           alignItems: "flex-start",
                           justifyItems: "center"
                         }}>
-                          <CardMedia
-                            component="img"
-                            sx={{ width: "70px", height: "70px", objectFit: "contain", marginLeft: "1rem" }}
-                            image={`https://pics.avs.io/640/320/${fetchlogo(item)}.png`}
-                          ></CardMedia>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}>
 
-                          {
-                            item.itineraries[0]['segments'].map((itemSeg, index) => (
-                              <CardContent
-                                key={index}
+                            {
+                              item.itineraries[0]['segments'].map((itemSeg, index) => (
+                                <Box
+                                  key={index}
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    marginTop: "1.5rem"
+                                  }}>
+
+                                  <Typography sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "flex-start",
+                                    width: "10%",
+                                    marginRight: "2rem"
+                                  }}>
+                                    {itemSeg["departure"]["iataCode"]}<ArrowForwardIcon /> {itemSeg["arrival"]["iataCode"]}
+                                  </Typography>
+                                  <Typography sx={{ width: "30%", marginRight: "1rem", maxWidth: '270px', minWidth: '270px' }}>Arrival: {handlDateTime(itemSeg, "arrival")}</Typography>
+                                  <Typography sx={{ width: "30%", marginRight: "1rem", maxWidth: '270px', minWidth: '270px' }}>Departure: {handlDateTime(itemSeg, "departure")}</Typography>
+                                  <Typography sx={{ maxWidth: '150px', minWidth: '150px' }}>Carrier code: {itemSeg["operating"]["carrierCode"]}</Typography>
+
+                                </Box>
+                              ))
+                            }
+                          </Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "center",
+                              alignItems: "flex-start",
+                            }}>
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "70px", height: "70px", objectFit: "contain", marginLeft: "1rem" }}
+                              image={`https://pics.avs.io/640/320/${fetchlogo(item)}.png`}
+                            ></CardMedia>
+                            <Paper
+                              elevation={3}
+                              sx={{
+                                padding: '8px',
+                                backgroundColor: '#ffd700',
+                              }}
+                            >
+                              <Typography
+                                variant="subtitle1"
+                                color="textSecondary"
                                 sx={{
-                                  display: "flex",
-                                  flexDirection: "row",
-                                  justifyContent: "space-evenly",
-                                  alignItems: "flex-start"
-                                }}>
-
-                                <Typography sx={{
-                                  display: "flex",
-                                  flexDirection: "row",
-                                  justifyContent: "space-between",
-                                  alignItems: "flex-start",
-                                  width: "10%",
-                                  marginRight: "2rem"
-                                }}>
-                                  {itemSeg["departure"]["iataCode"]}<ArrowForwardIcon /> {itemSeg["arrival"]["iataCode"]}
-                                </Typography>
-                                <Typography sx={{ width: "30%", marginRight: "1rem", maxWidth: '250px', minWidth: '250px' }}>Arrival: {handlDateTime(itemSeg, "arrival")}</Typography>
-                                <Typography sx={{ width: "30%", marginRight: "1rem", maxWidth: '250px', minWidth: '250px' }}>Departure: {handlDateTime(itemSeg, "departure")}</Typography>
-                                <Typography sx={{ maxWidth: '200px', minWidth: '150px' }}>Carrier code: {itemSeg["operating"]["carrierCode"]}</Typography>
-                                <Typography sx={{
                                   display: "flex",
                                   flexDirection: "row",
                                   justifyContent: "space-between",
@@ -431,12 +462,11 @@ const MainApp = ({ handleLogout }) => {
                                   width: "5%",
                                   marginRight: "2rem"
                                 }}><CurrencyRupeeIcon />{
-                                    item["price"]["total"]}
-                                </Typography>
-                              </CardContent>
-                            ))
-                          }
+                                  item["price"]["total"]}
+                              </Typography>
+                            </Paper>
 
+                          </Box>
                         </CardContent>
                       </Card>
                     </Grid>
