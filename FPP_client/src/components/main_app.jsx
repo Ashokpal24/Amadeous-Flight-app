@@ -31,6 +31,7 @@ import airportCodes from "../airport_codes_updated.json";
 
 
 const MainApp = ({ handleLogout }) => {
+  const [tab, setTab] = useState('realtime')
   const tempDep = {
     "code": "BOM",
     "AirportName": "Bombay (Mumbai) - Chhatrapati Shivaji International",
@@ -119,8 +120,8 @@ const MainApp = ({ handleLogout }) => {
 
 
   const fetchData = async () => {
-    console.log(airCodeDep)
-    console.log(searchParams);
+    // console.log(airCodeDep)
+    // console.log(searchParams);
     try {
       const response = await axios.get("https://test.api.amadeus.com/v2/shopping/flight-offers", {
         headers: {
@@ -156,7 +157,7 @@ const MainApp = ({ handleLogout }) => {
     else {
       console.log("Token expires at ", new Date(expiresIn * 1000).toLocaleString());
       fetchData();
-      console.log('brr');
+      // console.log('brr');
     }
   }, [departDate, airCodeDep, airCodeArvl]);
 
@@ -484,15 +485,29 @@ const MainApp = ({ handleLogout }) => {
     <Box width={1}>
 
       <AppBar position="sticky" >
+
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ✈️ Flight price prediction
           </Typography>
-          <Button color="inherit" onClick={() => { handleLogout(); }}>Login out</Button>
+          <Box
+            sx={{
+              width: "80%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}
+          >
+            <Box>
+              <Button color="inherit" onClick={(event) => setTab('realtime')}>Home</Button>
+              <Button color="inherit" onClick={(event) => setTab('prediction')}>Prediction</Button>
+            </Box>
+            <Button color="inherit" onClick={() => { handleLogout(); }}>Login out</Button>
+          </Box>
         </Toolbar>
       </AppBar>
-      <RealTimeFrom />
-      {/* <PredictionForm /> */}
+      {tab == 'realtime' ? (<RealTimeFrom />) : (<PredictionForm />)}
     </Box >
 
     //  
