@@ -34,7 +34,8 @@ if not os.path.exists(db_file_path):
 
 parser = reqparse.RequestParser()
 parser.add_argument("username", type=str, help="Username for registration")
-parser.add_argument("password", type=str, help="Password for registration and login")
+parser.add_argument("password", type=str,
+                    help="Password for registration and login")
 
 
 class HelloWorldResource(Resource):
@@ -76,9 +77,17 @@ class LoginResource(Resource):
             return {"message": "Invalid credentials", "severity": "error"}, 401
 
 
+class PredictResource(Resource):
+    def post(self):
+        args = parser.parse_args()
+        print(args)
+
+
 api.add_resource(HelloWorldResource, "/")
 api.add_resource(RegistrationResource, "/register")
 api.add_resource(LoginResource, "/login")
+api.add_resource(PredictResource, "/predict")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

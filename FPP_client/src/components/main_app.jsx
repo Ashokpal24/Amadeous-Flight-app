@@ -25,23 +25,31 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-
-import airportCodes from "../airport_codes.json";
+import Autocomplete from '@mui/material/Autocomplete';
+import airportCodes from "../airport_codes_updated.json";
 
 
 const MainApp = ({ handleLogout }) => {
-
+  const tempDep = {
+    "code": "BOM",
+    "AirportName": "Bombay (Mumbai) - Chhatrapati Shivaji International",
+    "Country": "India"
+  }
+  const tempArvl = {
+    "code": "DEL",
+    "AirportName": "Delhi - Indira Gandhi International Airport",
+    "Country": "India"
+  }
   const [data, setData] = useState(null);
-  const [airCodeDep, setAirCodeDep] = useState("");
-  const [airCodeArvl, setAirCodeArvl] = useState("");
-  const [tempDep, setTempDep] = useState("");
-  const [tempArvl, setTempArvl] = useState("");
+  const [airCodeDep, setAirCodeDep] = useState(tempDep);
+  const [airCodeArvl, setAirCodeArvl] = useState(tempArvl);
 
   const apiKey = process.env.API_KEY;
   const apiSecret = process.env.API_SECRET;
 
   const accessT = localStorage.getItem("access_token");
   const expiresIn = localStorage.getItem("expires_in");
+
 
   const setCurrDate = () => {
     const today = new Date();
@@ -50,16 +58,16 @@ const MainApp = ({ handleLogout }) => {
     return tomorrow.toISOString().split("T")[0];
 
   };
+
   const [departDate, setDepartDate] = useState(dayjs(setCurrDate()));
-  // console.log(departDate.format('YYYY-MM-DD'));
+
   const searchParams = {
-    originLocationCode: airCodeDep != '' ? airCodeDep : 'BOM',
-    destinationLocationCode: airCodeArvl != '' ? airCodeArvl : 'DEL',
+    originLocationCode: airCodeDep ? airCodeDep.code : 'BOM',
+    destinationLocationCode: airCodeArvl ? airCodeArvl.code : 'DEL',
     departureDate: departDate.format('YYYY-MM-DD'),
     adults: 1,
     currencyCode: "INR",
     max: 20,
-    // nonStop: true
   };
 
   const currentTimeInSeconds = () => { return Math.floor(Date.now() / 1000); };
@@ -67,77 +75,17 @@ const MainApp = ({ handleLogout }) => {
   const zeroPad = (num, places) => String(num).padStart(places, '0')
 
   const formatDateString = (inputDateString) => {
-    // Parse the input date string
-    const parts = inputDateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (am|pm)/i);
-
+    const parts = inputDateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (am|pm)/i); // Parse the input date string
     if (!parts) {
-      // Handle invalid input
-      console.error('Invalid date string format');
+      console.error('Invalid date string format'); // Handle invalid input
       return null;
     }
-
     const [, day, month, year, hours, minutes, seconds, period] = parts;
-
-    // Convert to 24-hour format
-    const hours24 = period.toLowerCase() === 'pm' ? parseInt(hours, 10) + 12 : parseInt(hours, 10);
-
-    // Create a new Date object
-    const formattedDate = `${year}-${zeroPad(month, 2)}-${day}T${hours24}:${minutes}`
-
-
+    const hours24 = period.toLowerCase() === 'pm' ? parseInt(hours, 10) + 12 : parseInt(hours, 10); // Convert to 24-hour format
+    const formattedDate = `${year}-${zeroPad(month, 2)}-${day}T${hours24}:${minutes}` // Create a new Date object
     return formattedDate;
   }
 
-
-  const handleSuggestionON = (setcode, setTempcode, searchBarID, suggestionsID) => {
-    const searchBar = document.getElementById(searchBarID);
-    const suggestionsList = document.getElementById(suggestionsID);
-    if (searchBar) {
-
-      searchBar.addEventListener('input', () => {
-        const searchTerm = searchBar.value.toLowerCase();
-        var filteredSuggestions = airportCodes.filter(airport => {
-          const airportCode = airport.Code.toLowerCase();
-          const airportName = airport.Airport.toLowerCase();
-          return airportCode.includes(searchTerm) || airportName.includes(searchTerm);
-        });
-        filteredSuggestions = filteredSuggestions.slice(0, 10);
-
-        if (filteredSuggestions.length > 0) {
-          suggestionsList.style.display = 'block';
-          suggestionsList.innerHTML = '';
-
-          filteredSuggestions.forEach(airport => {
-            const suggestion = document.createElement('li');
-            suggestion.textContent = `${airport.Code} - ${airport.Airport}`;
-
-            suggestion.addEventListener('click', () => {
-
-              suggestionsList.style.display = 'none';
-              console.log(airport.Code);
-              setcode(airport.Code);
-              setTempcode(airport.Code);
-            });
-            suggestionsList.appendChild(suggestion);
-          });
-        } else {
-          suggestionsList.style.display = 'none';
-        }
-
-      });
-    }
-  };
-
-  const handleSuggestionOFF = (setcode, suggestionsID) => {
-    const suggestionsList = document.getElementById(suggestionsID);
-    document.addEventListener('click', () => {
-      suggestionsList.style.display = 'none';
-      setcode("");
-      // setTempcode("");
-    });
-    document.removeEventListener('click');
-
-  };
   const fetchAcessToken = async () => {
 
     const tokenRequestData = {
@@ -169,25 +117,24 @@ const MainApp = ({ handleLogout }) => {
   };
 
 
-  const fetchData = () => {
-    axios
-      .get("https://test.api.amadeus.com/v2/shopping/flight-offers", {
+  const fetchData = async () => {
+    console.log(airCodeDep)
+    console.log(searchParams);
+    try {
+      const response = await axios.get("https://test.api.amadeus.com/v2/shopping/flight-offers", {
         headers: {
           Authorization: `Bearer ${accessT} `,
         },
         params: searchParams,
-      }).then((response) => {
-        const newData = response.data.data;
-        setData(newData);
-        // newData.forEach((items) => {
-        //   // console.log(items)
-        //   console.log(items['itineraries'][0]['segments'].length)
-        // })
-      }).
-      catch((error) =>
-        console.error("Error making API request:", error)
-      );
-  };
+      })
+
+      const newData = await response.data;
+      setData(newData.data);
+    }
+    catch (error) {
+      console.error("Error making API request:", error)
+    }
+  }
 
   const fetchlogo = (item) => {
     return item.itineraries[0]["segments"][0]["operating"]["carrierCode"];
@@ -379,60 +326,44 @@ const MainApp = ({ handleLogout }) => {
     );
   };
 
-
   const RealTimeFrom = () => {
     return (
-      <Box width={1}>
-        <AppBar position="sticky" >
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              ✈️ Flight price prediction
-            </Typography>
-            <Button color="inherit" onClick={() => { handleLogout(); }}>Login out</Button>
-          </Toolbar>
-        </AppBar>
-        <Box sx={{ marginTop: "2rem", marginBottom: "2rem", display: "flex", flexDirection: "row", justifyContent: "space-evenly", alignItems: "center", width: 1 }}>
-          <div className="search-container">
-            <TextField id="search-bar-1"
-              variant="outlined" label="From"
-              type="text"
-              value={tempDep}
-              onChange={(e) => { setTempDep(e.target.value); }}
-              onFocus={() => handleSuggestionON(
-                setAirCodeDep,
-                setTempDep,
-                'search-bar-1',
-                'suggestions-1'
-              )}
-              onBlur={() => handleSuggestionOFF(
-                setAirCodeDep,
-                'suggestions-1'
-              )}
-            />
-            <ul id="suggestions-1"></ul>
-          </div>
 
-          <div className="search-container">
-            <TextField
-              id="search-bar-2"
-              variant="outlined"
-              label="To"
-              type="text"
-              value={tempArvl}
-              onChange={(e) => { setTempArvl(e.target.value); }}
-              onFocus={() => handleSuggestionON(
-                setAirCodeArvl,
-                setTempArvl,
-                'search-bar-2',
-                'suggestions-2'
-              )}
-              onBlur={() => handleSuggestionOFF(
-                setAirCodeArvl,
-                'suggestions-2'
-              )}
-            />
-            <ul id="suggestions-2"></ul>
-          </div>
+      <>
+        <Box sx={{
+          marginTop: "2rem",
+          marginBottom: "2rem",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+          width: 1
+        }}>
+          <Autocomplete
+            disablePortal
+            id="departure-box"
+            value={airCodeDep}
+            onChange={(event, newValue) => setAirCodeDep(newValue)}
+            options={airportCodes}
+            getOptionLabel={(option) => option.AirportName}
+            isOptionEqualToValue={(option, value) => option.AirportName === value.AirportName}
+            sx={{ width: 300 }}
+            renderInput={(params) => <TextField {...params} label="From" />}
+
+          />
+
+          <Autocomplete
+            disablePortal
+            id="arrival-box"
+            value={airCodeArvl}
+            onChange={(event, newValue) => setAirCodeArvl(newValue)}
+            options={airportCodes}
+            getOptionLabel={(option) => option.AirportName}
+            isOptionEqualToValue={(option, value) => option.AirportName === value.AirportName}
+            sx={{ width: 300 }}
+            renderInput={(params) => <TextField {...params} label="To" />}
+
+          />
 
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -470,12 +401,14 @@ const MainApp = ({ handleLogout }) => {
 
                           {
                             item.itineraries[0]['segments'].map((itemSeg, index) => (
-                              <CardContent sx={{
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "space-evenly",
-                                alignItems: "flex-start"
-                              }}>
+                              <CardContent
+                                key={index}
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "row",
+                                  justifyContent: "space-evenly",
+                                  alignItems: "flex-start"
+                                }}>
 
                                 <Typography sx={{
                                   display: "flex",
@@ -512,13 +445,27 @@ const MainApp = ({ handleLogout }) => {
             </List>
           ) : (<>Hello world</>)
         }
-      </Box >
-    );
+      </>
+    )
   };
 
+
   return (
-    // <RealTimeFrom />
-    <PredictionForm />
+    <Box width={1}>
+
+      <AppBar position="sticky" >
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            ✈️ Flight price prediction
+          </Typography>
+          <Button color="inherit" onClick={() => { handleLogout(); }}>Login out</Button>
+        </Toolbar>
+      </AppBar>
+      <RealTimeFrom />
+      {/* <PredictionForm /> */}
+    </Box >
+
+    //  
   )
 };
 
