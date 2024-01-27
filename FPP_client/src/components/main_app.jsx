@@ -150,7 +150,8 @@ const MainApp = ({ handleLogout }) => {
       const response = await axios.post("https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/predict", {
         body: JSON.stringify(priceData),
       })
-      console.log
+      const data = await response.data;
+      console.log(data['prediction']);
     }
     catch (error) {
       console.error("Error making API request:", error)

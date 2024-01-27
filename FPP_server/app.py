@@ -8,6 +8,8 @@ import os
 import pandas as pd
 import numpy as np
 import json
+import sklearn
+import pickle
 
 app = Flask(__name__)
 CORS(
@@ -23,6 +25,7 @@ api = Api(app)
 db_file_path = "sqlite:///users.db"
 app.config["SQLALCHEMY_DATABASE_URI"] = db_file_path
 db = SQLAlchemy(app)
+model = pickle.load(open("flight_rf.pkl", "rb"))
 
 flight_list = [
     'Air Asia',
@@ -167,8 +170,13 @@ class PredictResource(Resource):
         for tmap in to_map:
             pred_list.append(tmap)
 
-        print(air_company_map)
-        print(pred_list)
+        # print(air_company_map)
+        # print(pred_list)
+
+        prediction = model.predict([pred_list])
+        p_amount = round(prediction[0], 2)
+
+        return {"prediction": p_amount}, 200
 
 
 api.add_resource(HelloWorldResource, "/")
