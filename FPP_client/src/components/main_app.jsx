@@ -75,6 +75,15 @@ const MainApp = ({ handleLogout }) => {
   const currentTimeInSeconds = () => { return Math.floor(Date.now() / 1000); };
 
   const zeroPad = (num, places) => String(num).padStart(places, '0')
+  const hour24Cal = (hours, period) => {
+    if (hours == "12" && period == "pm")
+      return hours
+    else if (hours == "12" && period == "am")
+      return parseInt('00', 10)
+    else if (hours != "12" && period == "pm")
+      return parseInt(hours, 10) + 12
+
+  }
 
   const formatDateString = (inputDateString) => {
     const parts = inputDateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (am|pm)/i); // Parse the input date string
@@ -83,7 +92,8 @@ const MainApp = ({ handleLogout }) => {
       return null;
     }
     const [, day, month, year, hours, minutes, seconds, period] = parts;
-    const hours24 = period.toLowerCase() === 'pm' ? parseInt(hours, 10) + 12 : parseInt(hours, 10); // Convert to 24-hour format
+
+    const hours24 = hour24Cal(hours, period)
     const formattedDate = `${year}-${zeroPad(month, 2)}-${day}T${hours24}:${minutes}` // Create a new Date object
     return formattedDate;
   }
@@ -118,10 +128,7 @@ const MainApp = ({ handleLogout }) => {
 
   };
 
-
   const fetchData = async () => {
-    // console.log(airCodeDep)
-    // console.log(searchParams);
     try {
       const response = await axios.get("https://test.api.amadeus.com/v2/shopping/flight-offers", {
         headers: {
@@ -132,6 +139,18 @@ const MainApp = ({ handleLogout }) => {
 
       const newData = await response.data;
       setData(newData.data);
+    }
+    catch (error) {
+      console.error("Error making API request:", error)
+    }
+  }
+
+  const predictPrice = async (priceData) => {
+    try {
+      const response = await axios.post("https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/predict", {
+        body: JSON.stringify(priceData),
+      })
+      console.log
     }
     catch (error) {
       console.error("Error making API request:", error)
@@ -179,10 +198,11 @@ const MainApp = ({ handleLogout }) => {
         destination: destinationOptions,
         stop: stopOptions,
         flight: flightOptions,
-        departureDT: departureDateTime,
-        arrivalDT: arrivalDateTime
+        departureDT: formatDateString(departureDateTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })),
+        arrivalDT: formatDateString(arrivalDateTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }))
       };
-      console.log(formData)
+      predictPrice(formData);
+
     };
 
     return (
@@ -200,6 +220,7 @@ const MainApp = ({ handleLogout }) => {
             }}
           >
             <TextField
+              required={true}
               sx={{ marginRight: '1rem', marginBottom: '2rem', maxWidth: '50%' }}
               fullWidth
               label="Departure"
@@ -212,6 +233,7 @@ const MainApp = ({ handleLogout }) => {
             />
 
             <TextField
+              required={true}
               sx={{ marginLeft: '1rem', marginBottom: '2rem', maxWidth: '50%' }}
               fullWidth
               label="Arrival"
@@ -235,6 +257,7 @@ const MainApp = ({ handleLogout }) => {
             <FormControl fullWidth sx={{ marginRight: '1rem', marginBottom: '2rem', maxWidth: '50%' }}>
               <InputLabel id="select-source">Source</InputLabel>
               <Select
+                required={true}
                 labelId="select-source"
                 id="select-source"
                 value={sourceOptions}
@@ -245,13 +268,13 @@ const MainApp = ({ handleLogout }) => {
                 <MenuItem value="Kolkata">Kolkata</MenuItem>
                 <MenuItem value="Mumbai">Mumbai</MenuItem>
                 <MenuItem value="Chennai">Chennai</MenuItem>
-                {/* Add more options as needed */}
               </Select>
             </FormControl>
 
             <FormControl fullWidth sx={{ marginLeft: '1rem', marginBottom: '2rem', maxWidth: '50%' }}>
               <InputLabel id="select-destination">Destination</InputLabel>
               <Select
+                required={true}
                 labelId="select-destination"
                 id="select-destination"
                 value={destinationOptions}
@@ -260,10 +283,9 @@ const MainApp = ({ handleLogout }) => {
               >
                 <MenuItem value="Cochin">Cochin</MenuItem>
                 <MenuItem value="Delhi">Delhi</MenuItem>
-                <MenuItem value="Delhi">New Delhi</MenuItem>
-                <MenuItem value="Delhi">Hyderabad</MenuItem>
-                <MenuItem value="Delhi">Kolkata</MenuItem>
-                {/* Add more options as needed */}
+                <MenuItem value="New Delhi">New Delhi</MenuItem>
+                <MenuItem value="Hyderabad">Hyderabad</MenuItem>
+                <MenuItem value="Kolkata">Kolkata</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -279,6 +301,7 @@ const MainApp = ({ handleLogout }) => {
             <FormControl fullWidth sx={{ maxWidth: '200px', marginRight: '2rem', marginBottom: '2rem' }}>
               <InputLabel id="select-stops">Stops</InputLabel>
               <Select
+                required={true}
                 labelId="select-stops"
                 id="select-stops"
                 value={stopOptions}
@@ -297,6 +320,7 @@ const MainApp = ({ handleLogout }) => {
             <FormControl fullWidth sx={{ marginLeft: '2rem', marginBottom: '2rem' }}>
               <InputLabel id="select-stops">Flight</InputLabel>
               <Select
+                required={true}
                 labelId="select-stops"
                 id="select-stops"
                 value={flightOptions}
