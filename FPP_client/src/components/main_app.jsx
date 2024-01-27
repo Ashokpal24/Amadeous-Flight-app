@@ -18,8 +18,15 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Paper
+  Paper,
+  Table,
+  TableContainer,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from '@mui/material';
+
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -28,6 +35,7 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Autocomplete from '@mui/material/Autocomplete';
 import airportCodes from "../airport_codes_updated.json";
+import Alert from '@mui/material/Alert';
 
 
 const MainApp = ({ handleLogout }) => {
@@ -42,9 +50,15 @@ const MainApp = ({ handleLogout }) => {
     "AirportName": "Delhi - Indira Gandhi International Airport",
     "Country": "India"
   }
+  const columns = [
+    'source', 'destination', 'stop', 'flight', 'departureDT', 'arrivalDT', 'Predicted price'
+  ]
   const [data, setData] = useState(null);
   const [airCodeDep, setAirCodeDep] = useState(tempDep);
   const [airCodeArvl, setAirCodeArvl] = useState(tempArvl);
+  const [predHist, setPredHist] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
+
 
   const apiKey = process.env.API_KEY;
   const apiSecret = process.env.API_SECRET;
@@ -82,6 +96,8 @@ const MainApp = ({ handleLogout }) => {
       return parseInt('00', 10)
     else if (hours != "12" && period == "pm")
       return parseInt(hours, 10) + 12
+    else
+      return parseInt(hours, 10)
 
   }
 
@@ -94,6 +110,7 @@ const MainApp = ({ handleLogout }) => {
     const [, day, month, year, hours, minutes, seconds, period] = parts;
 
     const hours24 = hour24Cal(hours, period)
+
     const formattedDate = `${year}-${zeroPad(month, 2)}-${day}T${hours24}:${minutes}` // Create a new Date object
     return formattedDate;
   }
@@ -151,7 +168,14 @@ const MainApp = ({ handleLogout }) => {
         body: JSON.stringify(priceData),
       })
       const data = await response.data;
-      console.log(data['prediction']);
+      const pred = data['prediction']
+      console.log(pred);
+      const newHist = [...Object.values(priceData), pred]
+      setPredHist((prev) => [...prev, newHist])
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 3000);
     }
     catch (error) {
       console.error("Error making API request:", error)
@@ -181,6 +205,44 @@ const MainApp = ({ handleLogout }) => {
     }
   }, [departDate, airCodeDep, airCodeArvl]);
 
+  const DataTable = ({ data, columns }) => {
+    return (
+      <TableContainer sx={{ boxShadow: 3 }}>
+        <Table>
+          <TableHead style={{ backgroundColor: "#263238" }}>
+            <TableRow>
+              {columns.map((column) => (
+                <TableCell sx={{ color: "#FFFFFF" }} key={column}>
+                  {column}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((rows, rowIndex) => (
+              <TableRow key={rowIndex}>
+                {rows.map((row, index) => (
+                  <TableCell
+                    sx={{
+                      backgroundColor:
+                        index == 6
+                          ? "#aaf542" : "#ffffff",
+                      color:
+                        index == 6
+                          ? "black" : "grey"
+                    }}
+                    key={index}
+                  >
+                    {row}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
 
   const PredictionForm = () => {
     const [sourceOptions, setSourceOptions] = useState('');
@@ -207,149 +269,168 @@ const MainApp = ({ handleLogout }) => {
     };
 
     return (
-      <Container maxWidth="md">
+      <Container width='100%' sx={{ padding: '0px' }}>
         <Typography variant="h4" align="center" gutterBottom marginTop={"2rem"}>
           Prediction 🕵️
         </Typography>
-        <form onSubmit={handleSubmit}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: "center"
-            }}
-          >
-            <TextField
-              required={true}
-              sx={{ marginRight: '1rem', marginBottom: '2rem', maxWidth: '50%' }}
-              fullWidth
-              label="Departure"
-              type="datetime-local"
-              defaultValue={formatDateString(departureDateTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }))}
-              InputLabelProps={{
-                shrink: true,
+        {
+          showAlert && (
+            <Alert icon={<CurrencyRupeeIcon fontSize="inherit" />} severity="success">
+              {predHist[predHist.length - 1][6]}
+            </Alert>
+          )
+        }
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start'
+          }}
+        >
+          <form style={{ marginRight: '2rem' }} onSubmit={handleSubmit}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                alignItems: "center"
               }}
-              onChange={(e) => setDepartureDateTime(new Date(e.target.value))}
-            />
+            >
+              <TextField
+                required={true}
+                sx={{ marginRight: '1rem', marginBottom: '2rem', maxWidth: '50%' }}
+                fullWidth
+                label="Departure"
+                type="datetime-local"
+                defaultValue={formatDateString(departureDateTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }))}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                onChange={(e) => setDepartureDateTime(new Date(e.target.value))}
+              />
 
-            <TextField
-              required={true}
-              sx={{ marginLeft: '1rem', marginBottom: '2rem', maxWidth: '50%' }}
-              fullWidth
-              label="Arrival"
-              type="datetime-local"
-              defaultValue={formatDateString(arrivalDateTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }))}
-              InputLabelProps={{
-                shrink: true,
+              <TextField
+                required={true}
+                sx={{ marginLeft: '1rem', marginBottom: '2rem', maxWidth: '50%' }}
+                fullWidth
+                label="Arrival"
+                type="datetime-local"
+                defaultValue={formatDateString(arrivalDateTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }))}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                onChange={(e) => setArrivalDateTime(new Date(e.target.value))}
+              />
+            </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                alignItems: "center"
               }}
-              onChange={(e) => setArrivalDateTime(new Date(e.target.value))}
-            />
-          </Box>
+            >
+              <FormControl fullWidth sx={{ marginRight: '1rem', marginBottom: '2rem', maxWidth: '50%' }}>
+                <InputLabel id="select-source">Source</InputLabel>
+                <Select
+                  required={true}
+                  labelId="select-source"
+                  id="select-source"
+                  value={sourceOptions}
+                  label="Source"
+                  onChange={(e) => setSourceOptions(e.target.value)}
+                >
+                  <MenuItem value="Delhi">Delhi</MenuItem>
+                  <MenuItem value="Kolkata">Kolkata</MenuItem>
+                  <MenuItem value="Mumbai">Mumbai</MenuItem>
+                  <MenuItem value="Chennai">Chennai</MenuItem>
+                </Select>
+              </FormControl>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: "center"
-            }}
-          >
-            <FormControl fullWidth sx={{ marginRight: '1rem', marginBottom: '2rem', maxWidth: '50%' }}>
-              <InputLabel id="select-source">Source</InputLabel>
-              <Select
-                required={true}
-                labelId="select-source"
-                id="select-source"
-                value={sourceOptions}
-                label="Source"
-                onChange={(e) => setSourceOptions(e.target.value)}
-              >
-                <MenuItem value="Delhi">Delhi</MenuItem>
-                <MenuItem value="Kolkata">Kolkata</MenuItem>
-                <MenuItem value="Mumbai">Mumbai</MenuItem>
-                <MenuItem value="Chennai">Chennai</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl fullWidth sx={{ marginLeft: '1rem', marginBottom: '2rem', maxWidth: '50%' }}>
+                <InputLabel id="select-destination">Destination</InputLabel>
+                <Select
+                  required={true}
+                  labelId="select-destination"
+                  id="select-destination"
+                  value={destinationOptions}
+                  label="destination"
+                  onChange={(e) => setDestinationOptions(e.target.value)}
+                >
+                  <MenuItem value="Cochin">Cochin</MenuItem>
+                  <MenuItem value="Delhi">Delhi</MenuItem>
+                  <MenuItem value="New Delhi">New Delhi</MenuItem>
+                  <MenuItem value="Hyderabad">Hyderabad</MenuItem>
+                  <MenuItem value="Kolkata">Kolkata</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
-            <FormControl fullWidth sx={{ marginLeft: '1rem', marginBottom: '2rem', maxWidth: '50%' }}>
-              <InputLabel id="select-destination">Destination</InputLabel>
-              <Select
-                required={true}
-                labelId="select-destination"
-                id="select-destination"
-                value={destinationOptions}
-                label="destination"
-                onChange={(e) => setDestinationOptions(e.target.value)}
-              >
-                <MenuItem value="Cochin">Cochin</MenuItem>
-                <MenuItem value="Delhi">Delhi</MenuItem>
-                <MenuItem value="New Delhi">New Delhi</MenuItem>
-                <MenuItem value="Hyderabad">Hyderabad</MenuItem>
-                <MenuItem value="Kolkata">Kolkata</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                alignItems: "center"
+              }}
+            >
+              <FormControl fullWidth sx={{ maxWidth: '200px', marginRight: '2rem', marginBottom: '2rem' }}>
+                <InputLabel id="select-stops">Stops</InputLabel>
+                <Select
+                  required={true}
+                  labelId="select-stops"
+                  id="select-stops"
+                  value={stopOptions}
+                  label="destination"
+                  onChange={(e) => setStopOptions(e.target.value)}
+                >
+                  <MenuItem value="0">No-Stops</MenuItem>
+                  <MenuItem value="1">1</MenuItem>
+                  <MenuItem value="2">2</MenuItem>
+                  <MenuItem value="3">3</MenuItem>
+                  <MenuItem value="4">4</MenuItem>
+                  {/* Add more options as needed */}
+                </Select>
+              </FormControl>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: "center"
-            }}
-          >
-            <FormControl fullWidth sx={{ maxWidth: '200px', marginRight: '2rem', marginBottom: '2rem' }}>
-              <InputLabel id="select-stops">Stops</InputLabel>
-              <Select
-                required={true}
-                labelId="select-stops"
-                id="select-stops"
-                value={stopOptions}
-                label="destination"
-                onChange={(e) => setStopOptions(e.target.value)}
-              >
-                <MenuItem value="0">No-Stops</MenuItem>
-                <MenuItem value="1">1</MenuItem>
-                <MenuItem value="2">2</MenuItem>
-                <MenuItem value="3">3</MenuItem>
-                <MenuItem value="4">4</MenuItem>
-                {/* Add more options as needed */}
-              </Select>
-            </FormControl>
+              <FormControl fullWidth sx={{ marginLeft: '2rem', marginBottom: '2rem' }}>
+                <InputLabel id="select-stops">Flight</InputLabel>
+                <Select
+                  required={true}
+                  labelId="select-stops"
+                  id="select-stops"
+                  value={flightOptions}
+                  label="destination"
+                  onChange={(e) => setFlightOptions(e.target.value)}
+                >
+                  <MenuItem value="Jet Airways">Jet Airways</MenuItem>
+                  <MenuItem value="IndiGo">IndiGo</MenuItem>
+                  <MenuItem value="Air India">Air India</MenuItem>
+                  <MenuItem value="Multiple carriers">Multiple carriers</MenuItem>
+                  <MenuItem value="SpiceJet">SpiceJet</MenuItem>
+                  <MenuItem value="Vistara">Vistara</MenuItem>
+                  <MenuItem value="Air Asia">Air Asia</MenuItem>
+                  <MenuItem value="GoAir">GoAir</MenuItem>
+                  <MenuItem value="Multiple carriers Premium economy">Multiple carriers Premium economy</MenuItem>
+                  <MenuItem value="Jet Airways Business">Jet Airways Business</MenuItem>
+                  <MenuItem value="Vistara Premium economy">Vistara Premium economy</MenuItem>
+                  <MenuItem value="Trujet">Trujet</MenuItem>
+                  {/* Add more options as needed */}
+                </Select>
+              </FormControl>
+            </Box>
 
-            <FormControl fullWidth sx={{ marginLeft: '2rem', marginBottom: '2rem' }}>
-              <InputLabel id="select-stops">Flight</InputLabel>
-              <Select
-                required={true}
-                labelId="select-stops"
-                id="select-stops"
-                value={flightOptions}
-                label="destination"
-                onChange={(e) => setFlightOptions(e.target.value)}
-              >
-                <MenuItem value="Jet Airways">Jet Airways</MenuItem>
-                <MenuItem value="IndiGo">IndiGo</MenuItem>
-                <MenuItem value="Air India">Air India</MenuItem>
-                <MenuItem value="Multiple carriers">Multiple carriers</MenuItem>
-                <MenuItem value="SpiceJet">SpiceJet</MenuItem>
-                <MenuItem value="Vistara">Vistara</MenuItem>
-                <MenuItem value="Air Asia">Air Asia</MenuItem>
-                <MenuItem value="GoAir">GoAir</MenuItem>
-                <MenuItem value="Multiple carriers Premium economy">Multiple carriers Premium economy</MenuItem>
-                <MenuItem value="Jet Airways Business">Jet Airways Business</MenuItem>
-                <MenuItem value="Vistara Premium economy">Vistara Premium economy</MenuItem>
-                <MenuItem value="Trujet">Trujet</MenuItem>
-                {/* Add more options as needed */}
-              </Select>
-            </FormControl>
-          </Box>
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ my: 2 }}>
+              Predict
+            </Button>
+          </form>
+          {predHist != [] ? (<DataTable sx={{ marginLeft: '2rem' }} data={predHist} columns={columns} />) : (<></>)}
+        </Box>
 
-          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ my: 2 }}>
-            Predict
-          </Button>
-        </form>
-      </Container>
+      </Container >
     );
   };
 
@@ -504,7 +585,6 @@ const MainApp = ({ handleLogout }) => {
       </>
     )
   };
-
 
   return (
     <Box width={1}>
