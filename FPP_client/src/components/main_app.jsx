@@ -51,7 +51,7 @@ const MainApp = ({ handleLogout }) => {
     "Country": "India"
   }
   const columns = [
-    'source', 'destination', 'stop', 'flight', 'departureDT', 'arrivalDT', 'Predicted price'
+    'source', 'destination', 'stop', 'flight', 'departureDT', 'arrivalDT', 'Predicted price (currently)'
   ]
   const [data, setData] = useState(null);
   const [airCodeDep, setAirCodeDep] = useState(tempDep);
@@ -273,6 +273,7 @@ const MainApp = ({ handleLogout }) => {
         <Typography variant="h4" align="center" gutterBottom marginTop={"2rem"}>
           Prediction 🕵️
         </Typography>
+        <Alert sx={{ marginBottom: "1.5rem" }} severity="warning">Following predicted prices are applicable at time of prediction, and can subject change when predicted in future</Alert>
         {
           showAlert && (
             <Alert icon={<CurrencyRupeeIcon fontSize="inherit" />} severity="success">
