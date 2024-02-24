@@ -6,9 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
 import pandas as pd
-import numpy as np
+# import numpy as np
 import json
-import sklearn
+# import sklearn
 import pickle
 
 app = Flask(__name__)
@@ -16,7 +16,7 @@ CORS(
     app,
     resources={
         r"/*": {
-            "origins": "https://sturdy-spoon-qgpxggv47rv24pvp-5173.app.github.dev"
+            "origins": "https://kdrn74-5173.csb.app"
         }
     },
     supports_credentials=True,
@@ -116,7 +116,8 @@ class LoginResource(Resource):
 
 class PredictResource(Resource):
     def post(self):
-        args = parser.parse_args()
+        # args = parser.parse_args()
+        predictions=[]
         json_data = request.get_json()
         obj = json.loads(json_data['body'])
         destination = obj['destination']
@@ -128,17 +129,23 @@ class PredictResource(Resource):
         print(obj)
         print(depDT, airplane_company)
 
-        Journey_day = int(pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M").day)
-        Journey_month = int(pd.to_datetime(
-            depDT, format="%Y-%m-%dT%H:%M").month)
+        tempDp_journey_datetime = pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M")
+        Journey_day = int(tempDp_journey_datetime.day)
+        Journey_month = int(tempDp_journey_datetime.month)
+        Dep_hour = int(tempDp_journey_datetime.hour)
+        Dep_min = int(tempDp_journey_datetime.minute)
 
-        Dep_hour = int(pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M").hour)
-        Dep_min = int(pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M").minute)
+        # print(tempDp_journey_datetime+pd.DateOffset(days=10))
+        # print(tempDp_journey_datetime+pd.DateOffset(days=20))
+        # print(tempDp_journey_datetime+pd.DateOffset(days=30))
 
-        Arrival_hour = int(pd.to_datetime(
-            arvlDT, format="%Y-%m-%dT%H:%M").hour)
-        Arrival_min = int(pd.to_datetime(
-            arvlDT, format="%Y-%m-%dT%H:%M").minute)
+        tempAr_journey_datetime = pd.to_datetime(arvlDT, format="%Y-%m-%dT%H:%M")
+        Arrival_hour = int(tempAr_journey_datetime.hour)
+        Arrival_min = int(tempAr_journey_datetime.minute)
+
+        # print(tempAr_journey_datetime+pd.DateOffset(days=10))
+        # print(tempAr_journey_datetime+pd.DateOffset(days=20))
+        # print(tempAr_journey_datetime+pd.DateOffset(days=30))
 
         dur_hour = abs(Arrival_hour - Dep_hour)
         dur_min = abs(Arrival_min - Dep_min)
@@ -176,7 +183,35 @@ class PredictResource(Resource):
         prediction = model.predict([pred_list])
         p_amount = round(prediction[0], 2)
 
-        return {"prediction": p_amount}, 200
+        for k in [10,20,30]:
+            tempDp_journey_datetime = pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M")
+            tempDp_journey_datetime = tempDp_journey_datetime + pd.DateOffset(days=k)
+            Journey_day = int(tempDp_journey_datetime.day)
+            Journey_month = int(tempDp_journey_datetime.month)
+            Dep_hour = int(tempDp_journey_datetime.hour)
+            Dep_min = int(tempDp_journey_datetime.minute)
+
+            tempAr_journey_datetime = pd.to_datetime(arvlDT, format="%Y-%m-%dT%H:%M")
+            tempAr_journey_datetime = tempAr_journey_datetime + pd.DateOffset(days=k)
+            Arrival_hour = int(tempAr_journey_datetime.hour)
+            Arrival_min = int(tempAr_journey_datetime.minute)
+
+            dur_hour = abs(Arrival_hour - Dep_hour)
+            dur_min = abs(Arrival_min - Dep_min)
+
+            pred_list[1] = Journey_day
+            pred_list[2] = Journey_month
+            pred_list[3] = Dep_hour
+            pred_list[4] = Dep_min
+            pred_list[5] = Arrival_hour
+            pred_list[6] = Arrival_min
+            pred_list[7] = dur_hour
+
+            prediction_new = model.predict([pred_list])
+            predictions.append(round(prediction_new[0], 2))
+            
+
+        return {"prediction": p_amount, "predictions":predictions}, 200
 
 
 api.add_resource(HelloWorldResource, "/")
