@@ -168,7 +168,7 @@ const MainApp = ({ handleLogout }) => {
         body: JSON.stringify(priceData),
       })
       const data = await response.data;
-      console.log(data)
+      // console.log(data)
       const newHist = [...Object.values(priceData),  data['prediction'],...data['predictions']]
       setPredHist((prev) => [...prev, newHist])
       setShowAlert(true);
@@ -220,21 +220,24 @@ const MainApp = ({ handleLogout }) => {
           <TableBody>
             {data.map((rows, rowIndex) => (
               <TableRow key={rowIndex}>
-                {rows.map((row, index) => (
-                  <TableCell
-                    sx={{
-                      backgroundColor:
-                        index == 6
-                          ? "#aaf542" : "#ffffff",
-                      color:
-                        index == 6
-                          ? "black" : "grey"
-                    }}
-                    key={index}
-                  >
-                    {row}
-                  </TableCell>
-                ))}
+                {rows.map((row, index) => {
+                  const tempRows=[...rows]
+                  const minPrice=Math.min(...tempRows.splice(6,10))
+                  return(
+                      <TableCell
+                        sx={{
+                          backgroundColor:
+                            row==minPrice
+                              ? "#aaf542" : "#ffffff",
+                          color:
+                            row==minPrice ? "black" : "grey"
+                        }}
+                        key={index}
+                      >
+                      {row}
+                    </TableCell>
+                  )
+                })}
               </TableRow>
             ))}
           </TableBody>
