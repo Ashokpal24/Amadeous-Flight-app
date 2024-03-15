@@ -23,7 +23,7 @@ function App() {
             return;
         }
         try {
-            const response = await fetch('https://kdrn74-5000.csb.app/register', {
+            const response = await fetch('https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ function App() {
 
         }
         try {
-            const response = await fetch('https://kdrn74-5000.csb.app/login', {
+            const response = await fetch('https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,8 +88,7 @@ function App() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundImage: "url(./texture/background.jpg)",
-            backgroundPosition: "center"
+
         }} >
             {auth == false ? (
                 <Box sx={{
@@ -99,7 +98,8 @@ function App() {
                     justifyContent: "center",
                     width: "100%",
                     height: "100vh",
-
+                    backgroundImage: "url(./texture/background.jpg)",
+                    backgroundPosition: "center"
                     // backgroundColor: "lightblue",
                     // overflowY: "none",
                 }}>

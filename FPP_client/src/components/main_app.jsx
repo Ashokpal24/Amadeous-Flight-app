@@ -39,7 +39,7 @@ import Alert from '@mui/material/Alert';
 
 
 const MainApp = ({ handleLogout }) => {
-  const [tab, setTab] = useState('realtime')
+  const [tab, setTab] = useState('prediction')
   const tempDep = {
     "code": "BOM",
     "AirportName": "Bombay (Mumbai) - Chhatrapati Shivaji International",
@@ -51,7 +51,7 @@ const MainApp = ({ handleLogout }) => {
     "Country": "India"
   }
   const columns = [
-    'source', 'destination', 'stop', 'flight', 'departureDT', 'arrivalDT', 'Predicted price (day specified)',"Predicted price +10day","Predicted price +20day","Predicted price +30day"
+    'Source', 'Destination', 'Stop', 'Flight', 'DepartureDT', 'ArrivalDT', 'Price (day specified)', "Price +10day", "Price +20day", "Price +30day"
   ]
   const [data, setData] = useState(null);
   const [airCodeDep, setAirCodeDep] = useState(tempDep);
@@ -169,7 +169,7 @@ const MainApp = ({ handleLogout }) => {
       })
       const data = await response.data;
       // console.log(data)
-      const newHist = [...Object.values(priceData),  data['prediction'],...data['predictions']]
+      const newHist = [...Object.values(priceData), data['prediction'], ...data['predictions']]
       setPredHist((prev) => [...prev, newHist])
       setShowAlert(true);
       setTimeout(() => {
@@ -211,7 +211,10 @@ const MainApp = ({ handleLogout }) => {
           <TableHead style={{ backgroundColor: "#263238" }}>
             <TableRow>
               {columns.map((column) => (
-                <TableCell sx={{ color: "#FFFFFF" }} key={column}>
+                <TableCell sx={{
+                  color: "#FFFFFF",
+                  border: "1px solid white",
+                }} key={column}>
                   {column}
                 </TableCell>
               ))}
@@ -221,19 +224,19 @@ const MainApp = ({ handleLogout }) => {
             {data.map((rows, rowIndex) => (
               <TableRow key={rowIndex}>
                 {rows.map((row, index) => {
-                  const tempRows=[...rows]
-                  const minPrice=Math.min(...tempRows.splice(6,10))
-                  return(
-                      <TableCell
-                        sx={{
-                          backgroundColor:
-                            row==minPrice
-                              ? "#aaf542" : "#ffffff",
-                          color:
-                            row==minPrice ? "black" : "grey"
-                        }}
-                        key={index}
-                      >
+                  const tempRows = [...rows]
+                  const minPrice = Math.min(...tempRows.splice(6, 10))
+                  return (
+                    <TableCell
+                      sx={{
+                        backgroundColor:
+                          row == minPrice
+                            ? "#aaf542" : "#ffffff",
+                        color:
+                          row == minPrice ? "black" : "grey"
+                      }}
+                      key={index}
+                    >
                       {row}
                     </TableCell>
                   )
@@ -271,7 +274,13 @@ const MainApp = ({ handleLogout }) => {
     };
 
     return (
-      <Container width='100%' sx={{ padding: '0px' }}>
+      <Container width='100%' sx={{
+        marginTop: "2rem",
+        padding: '5px',
+        backgroundColor: "white",
+        borderRadius: "10px",
+        boxShadow: 3
+      }}>
         <Typography variant="h4" align="center" gutterBottom marginTop={"2rem"}>
           Prediction 🕵️
         </Typography>
@@ -458,7 +467,7 @@ const MainApp = ({ handleLogout }) => {
             options={airportCodes}
             getOptionLabel={(option) => option.AirportName}
             isOptionEqualToValue={(option, value) => option.AirportName === value.AirportName}
-            sx={{ width: 300 }}
+            sx={{ width: 300, backgroundColor: "white", borderRadius: "5px" }}
             renderInput={(params) => <TextField {...params} label="From" />}
 
           />
@@ -471,7 +480,7 @@ const MainApp = ({ handleLogout }) => {
             options={airportCodes}
             getOptionLabel={(option) => option.AirportName}
             isOptionEqualToValue={(option, value) => option.AirportName === value.AirportName}
-            sx={{ width: 300 }}
+            sx={{ width: 300, backgroundColor: "white", borderRadius: "5px" }}
             renderInput={(params) => <TextField {...params} label="To" />}
 
           />
@@ -481,6 +490,7 @@ const MainApp = ({ handleLogout }) => {
               label="Departure"
               value={departDate}
               onChange={(newValue) => setDepartDate(newValue)}
+              sx={{ backgroundColor: "white", borderRadius: "5px"   }}
             />
           </LocalizationProvider>
 
@@ -590,7 +600,13 @@ const MainApp = ({ handleLogout }) => {
   };
 
   return (
-    <Box width={1}>
+    <Box width={1} sx={{
+      backgroundImage: "url(./texture/background.jpg)",
+      backgroundPosition: "center",
+      backgroundAttachment: "fixed",
+      // height: "100vh"
+      minHeight: "100vh"
+    }} >
 
       <AppBar position="sticky" >
 
@@ -604,7 +620,7 @@ const MainApp = ({ handleLogout }) => {
               display: "flex",
               flexDirection: "row",
               justifyContent: "space-between",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <Box>
@@ -615,6 +631,7 @@ const MainApp = ({ handleLogout }) => {
           </Box>
         </Toolbar>
       </AppBar>
+
       {tab == 'realtime' ? (<RealTimeFrom />) : (<PredictionForm />)}
     </Box >
 

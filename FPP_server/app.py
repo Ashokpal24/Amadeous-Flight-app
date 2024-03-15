@@ -16,7 +16,7 @@ CORS(
     app,
     resources={
         r"/*": {
-            "origins": "https://kdrn74-5173.csb.app"
+            "origins": "https://sturdy-spoon-qgpxggv47rv24pvp-5173.app.github.dev"
         }
     },
     supports_credentials=True,
@@ -117,7 +117,7 @@ class LoginResource(Resource):
 class PredictResource(Resource):
     def post(self):
         # args = parser.parse_args()
-        predictions=[]
+        predictions = []
         json_data = request.get_json()
         obj = json.loads(json_data['body'])
         destination = obj['destination']
@@ -129,7 +129,8 @@ class PredictResource(Resource):
         print(obj)
         print(depDT, airplane_company)
 
-        tempDp_journey_datetime = pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M")
+        tempDp_journey_datetime = pd.to_datetime(
+            depDT, format="%Y-%m-%dT%H:%M")
         Journey_day = int(tempDp_journey_datetime.day)
         Journey_month = int(tempDp_journey_datetime.month)
         Dep_hour = int(tempDp_journey_datetime.hour)
@@ -139,7 +140,8 @@ class PredictResource(Resource):
         # print(tempDp_journey_datetime+pd.DateOffset(days=20))
         # print(tempDp_journey_datetime+pd.DateOffset(days=30))
 
-        tempAr_journey_datetime = pd.to_datetime(arvlDT, format="%Y-%m-%dT%H:%M")
+        tempAr_journey_datetime = pd.to_datetime(
+            arvlDT, format="%Y-%m-%dT%H:%M")
         Arrival_hour = int(tempAr_journey_datetime.hour)
         Arrival_min = int(tempAr_journey_datetime.minute)
 
@@ -183,16 +185,20 @@ class PredictResource(Resource):
         prediction = model.predict([pred_list])
         p_amount = round(prediction[0], 2)
 
-        for k in [10,20,30]:
-            tempDp_journey_datetime = pd.to_datetime(depDT, format="%Y-%m-%dT%H:%M")
-            tempDp_journey_datetime = tempDp_journey_datetime + pd.DateOffset(days=k)
+        for k in [10, 20, 30]:
+            tempDp_journey_datetime = pd.to_datetime(
+                depDT, format="%Y-%m-%dT%H:%M")
+            tempDp_journey_datetime = tempDp_journey_datetime + \
+                pd.DateOffset(days=k)
             Journey_day = int(tempDp_journey_datetime.day)
             Journey_month = int(tempDp_journey_datetime.month)
             Dep_hour = int(tempDp_journey_datetime.hour)
             Dep_min = int(tempDp_journey_datetime.minute)
 
-            tempAr_journey_datetime = pd.to_datetime(arvlDT, format="%Y-%m-%dT%H:%M")
-            tempAr_journey_datetime = tempAr_journey_datetime + pd.DateOffset(days=k)
+            tempAr_journey_datetime = pd.to_datetime(
+                arvlDT, format="%Y-%m-%dT%H:%M")
+            tempAr_journey_datetime = tempAr_journey_datetime + \
+                pd.DateOffset(days=k)
             Arrival_hour = int(tempAr_journey_datetime.hour)
             Arrival_min = int(tempAr_journey_datetime.minute)
 
@@ -209,9 +215,8 @@ class PredictResource(Resource):
 
             prediction_new = model.predict([pred_list])
             predictions.append(round(prediction_new[0], 2))
-            
 
-        return {"prediction": p_amount, "predictions":predictions}, 200
+        return {"prediction": p_amount, "predictions": predictions}, 200
 
 
 api.add_resource(HelloWorldResource, "/")
