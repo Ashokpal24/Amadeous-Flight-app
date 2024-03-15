@@ -606,8 +606,8 @@ const MainApp = ({ handleLogout }) => {
             }}
           >
             <Box>
-              <Button color="inherit" onClick={(event) => setTab('realtime')}>Home</Button>
               <Button color="inherit" onClick={(event) => setTab('prediction')}>Prediction</Button>
+              <Button color="inherit" onClick={(event) => setTab('realtime')}>Home</Button>
             </Box>
             <Button color="inherit" onClick={() => { handleLogout(); }}>Login out</Button>
           </Box>
