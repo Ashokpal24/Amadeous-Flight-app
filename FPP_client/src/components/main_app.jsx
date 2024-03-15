@@ -51,7 +51,7 @@ const MainApp = ({ handleLogout }) => {
     "Country": "India"
   }
   const columns = [
-    'source', 'destination', 'stop', 'flight', 'departureDT', 'arrivalDT', 'Predicted price (currently)'
+    'source', 'destination', 'stop', 'flight', 'departureDT', 'arrivalDT', 'Predicted price (day specified)',"Predicted price +10day","Predicted price +20day","Predicted price +30day"
   ]
   const [data, setData] = useState(null);
   const [airCodeDep, setAirCodeDep] = useState(tempDep);
@@ -164,13 +164,12 @@ const MainApp = ({ handleLogout }) => {
 
   const predictPrice = async (priceData) => {
     try {
-      const response = await axios.post("https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/predict", {
+      const response = await axios.post("https://kdrn74-5000.csb.app/predict", {
         body: JSON.stringify(priceData),
       })
       const data = await response.data;
-      const pred = data['prediction']
-      console.log(pred);
-      const newHist = [...Object.values(priceData), pred]
+      // console.log(data)
+      const newHist = [...Object.values(priceData),  data['prediction'],...data['predictions']]
       setPredHist((prev) => [...prev, newHist])
       setShowAlert(true);
       setTimeout(() => {
@@ -221,21 +220,24 @@ const MainApp = ({ handleLogout }) => {
           <TableBody>
             {data.map((rows, rowIndex) => (
               <TableRow key={rowIndex}>
-                {rows.map((row, index) => (
-                  <TableCell
-                    sx={{
-                      backgroundColor:
-                        index == 6
-                          ? "#aaf542" : "#ffffff",
-                      color:
-                        index == 6
-                          ? "black" : "grey"
-                    }}
-                    key={index}
-                  >
-                    {row}
-                  </TableCell>
-                ))}
+                {rows.map((row, index) => {
+                  const tempRows=[...rows]
+                  const minPrice=Math.min(...tempRows.splice(6,10))
+                  return(
+                      <TableCell
+                        sx={{
+                          backgroundColor:
+                            row==minPrice
+                              ? "#aaf542" : "#ffffff",
+                          color:
+                            row==minPrice ? "black" : "grey"
+                        }}
+                        key={index}
+                      >
+                      {row}
+                    </TableCell>
+                  )
+                })}
               </TableRow>
             ))}
           </TableBody>

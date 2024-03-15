@@ -23,7 +23,7 @@ function App() {
             return;
         }
         try {
-            const response = await fetch('https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/register', {
+            const response = await fetch('https://kdrn74-5000.csb.app/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ function App() {
 
         }
         try {
-            const response = await fetch('https://sturdy-spoon-qgpxggv47rv24pvp-5000.app.github.dev/login', {
+            const response = await fetch('https://kdrn74-5000.csb.app/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
